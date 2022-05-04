@@ -5,7 +5,6 @@ output: html_document
 
 ```{r setup, include=FALSE}
 rm(CREDIT)
-rm(train)
 
 knitr::opts_chunk$set(echo = TRUE)
 
@@ -16,27 +15,15 @@ library(fpp3)
 
 CREDIT <- read.csv("credit.csv")
 
-year <- c()
-for (i in 1:41) {
-  year[i] <- 1980 + i
-}
+CREDIT$month <- seq(as.Date('2021/12/1'), by = "-1 month", length.out = 492)
+CREDIT$month <- yearmonth(CREDIT$month)
+CREDIT <- tsibble(CREDIT, index = month)
 
-year <- rep(year, 12)
-year <- year[order(year, decreasing = TRUE)]
+CREDIT_Ex <- read.csv("credit.csv")
+CREDIT_Ex$month <- seq(as.Date('2021/12/1'), by = "-1 month", length.out = 492)
+CREDIT_Ex$month <- yearmonth(CREDIT$month)
+CREDIT_Ex <- tsibble(CREDIT, index = month)
 
-CREDIT$date <- paste(year, CREDIT$date)
-
-colnames(CREDIT)[1] <- "Credit"
-colnames(CREDIT)[2] <- "Date"
-
-train <- head(CREDIT, nrow(CREDIT) - 12)
-
-
-plot(CREDIT)
-
-ddata <- decompose(CREDIT, "multiplicative")
-
-plot(ddata)
 
 
 
