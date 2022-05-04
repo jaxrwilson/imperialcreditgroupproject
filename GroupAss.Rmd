@@ -13,6 +13,8 @@ library(tsibble)
 library(lubridate)
 library(fpp3)
 
+data("global_economy")
+
 CREDIT <- read.csv("credit.csv")
 
 CREDIT$month <- seq(as.Date('2021/12/1'), by = "-1 month", length.out = 492)
@@ -25,27 +27,33 @@ CREDIT_Ex$month <- yearmonth(CREDIT$month)
 CREDIT_Ex <- tsibble(CREDIT, index = month)
 
 
-
-
 ```
 
 ## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
 ```{r cars}
+gg_tsdisplay(CREDIT_Ex, plot_type = 'partial')
+             
+
+fit <- CREDIT_Ex %>%
+  model(ARIMA(credit_in_millions ~ pdq(0,0,0)))
+report(fit)
+
+
+CREDIT_Ex %>%
+  slice(-n()) %>%
+  stretch_tsibble(.init = 10) %>%
+  model(
+    ETS(credit_in_millions),
+    ARIMA(credit_in_millions)
+  ) %>%
+  forecast(h = 1) %>%
+  accuracy(CREDIT_Ex) %>%
+  select(.model, RMSE:MAPE)
+
+
+
 
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-
-
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
