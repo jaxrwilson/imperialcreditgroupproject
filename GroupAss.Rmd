@@ -13,7 +13,7 @@ library(tsibble)
 library(lubridate)
 library(fpp3)
 
-data("global_economy")
+
 
 CREDIT <- read.csv("credit.csv")
 
@@ -40,17 +40,30 @@ fit <- CREDIT_Ex %>%
   model(ARIMA(credit_in_millions ~ pdq(0,0,0)))
 report(fit)
 
-
 CREDIT_Ex %>%
   slice(-n()) %>%
   stretch_tsibble(.init = 10) %>%
   model(
-    ETS(credit_in_millions),
-    ARIMA(credit_in_millions)
+    ARIMA(credit_in_millions),
+    ETS(credit_in_millions)
   ) %>%
   forecast(h = 1) %>%
   accuracy(CREDIT_Ex) %>%
-  select(.model, RMSE:MAPE)
+  select(.model, RMSE)
+
+CREDIT_Ex %>%
+  model(arima(credit_in_millions)) %>%
+  forecast(h = 12) %>%
+  autoplot(CREDIT_Ex %>% filter(Year >= 2000)) +
+  labs(title = "Imperial Credit Prediction",
+       y = "Credit (millions)")
+
+CREDIT_Ex %>%
+  model(ARIMA(CREDIT_Ex)) %>%
+  forecast(h="5 years") %>%
+  autoplot(CREDIT_Ex) +
+  labs(title = "Imperial Credit Prediction",
+       y = "Credit (millions)")
 
 
 
